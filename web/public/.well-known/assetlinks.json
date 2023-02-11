@@ -1,0 +1,6 @@
+[{
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target" : { "namespace": "android_app", "package_name": "app.cyclic.ruby_strange_tick.twa",
+                 "sha256_cert_fingerprints": ["92:B7:F8:16:E2:75:28:55:CA:54:1B:12:37:59:6F:7B:B2:4E:83:3B:EF:9B:6E:E1:F2:BA:4C:3C:2D:E1:6A:76"] }
+  }
+]
