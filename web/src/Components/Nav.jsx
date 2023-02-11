@@ -4,6 +4,7 @@ import { Mail,DragHandle,
     AccountBox,Settings,Group,ShoppingCart,
     Person,Storefront,Logout,LocalMall
    } from "@mui/icons-material";
+   import { GlobalContext } from '../Context/Context';
    import EscalatorWarningIcon from '@mui/icons-material/EscalatorWarning';
    import LogoutIcon from '@mui/icons-material/Logout';
    import {
@@ -29,7 +30,7 @@ import { Mail,DragHandle,
 
  import { Link } from "react-router-dom";
 
- import { useState } from "react";
+ import { useState,useContext } from "react";
  import * as React from 'react';
  import axios from 'axios';
  import { useEffect } from "react"
@@ -46,7 +47,7 @@ import { Mail,DragHandle,
 
  const LinkPage = styled(Link)({
    textDecoration:'none',
-   color:' black',
+   color:' white',
    
    
   });
@@ -83,14 +84,12 @@ import { Mail,DragHandle,
  
 
 
-let baseUrl = ``;
-if (window.location.href.split(":")[0] === "http") {
-  baseUrl = `http://localhost:3000`;
-}
 
- const Nav = ({mode,setMode,BageNo,setBageNo}) => {
+
+ const Nav = ({mode,setMode,BageNo,setBageNo,LogoutHandle}) => {
    const [open, setOpen] = useState(false);
    const [isOpen, setIsOpen] = React.useState(false)
+   let { state, dispatch } = useContext(GlobalContext);
    const toggleDrawer = () => {
        // setIsOpen((prevState) => !prevState)
        setIsOpen(true)
@@ -98,25 +97,16 @@ if (window.location.href.split(":")[0] === "http") {
 //    const [isOpen, setIsOpen] = React.useState(false)
 
 const [loadProduct, setLoadProduct] = useState(false)
-// useEffect(() => {
-  
-//   (async () => {
-//     const response =
-//       await axios.get(`${baseUrl}/bageno`);
- 
-//     console.log("data", response.data.data)
-   
-
-//   })();
-// }, [loadProduct]);
 
 
    return (
-     <AppBar position="sticky">
+     <AppBar position="sticky" >
 
-       <StyledToolbar>
-       <Button variant="contained" sx={{display:{lg:'none',sm:'none'}}} onClick={toggleDrawer}><DragHandle/></Button>
+       <StyledToolbar sx={{backgroundColor:"#7ceaa4", color:"white"}}>
+       <Button  variant="contained" sx={{display:{lg:'none',sm:'none'},
+      backgroundColor:"#7ceaa4", color:"white"}} onClick={toggleDrawer}><DragHandle/></Button>
            <Drawer
+           
                open={isOpen}
                onClose={()=>{
                    setIsOpen(false)
@@ -124,12 +114,13 @@ const [loadProduct, setLoadProduct] = useState(false)
                direction='left'
                
            >
-               <Box sx={{ width:250,textAlign:'center' }}>
-               <List>
+               <Box sx={{height:"100%", width:250,textAlign:'center',backgroundColor:"#7ceaa4", color:"white" }}
+               >
+               <List >
                  <LinkPage
                   onClick={()=>{setIsOpen(false)}}
                  to="/">
-         <ListItem
+         <ListItem sx={{ color:"white" }}
          disablePadding>
            <ListItemButton component="a" >
              <ListItemIcon>
@@ -162,7 +153,7 @@ const [loadProduct, setLoadProduct] = useState(false)
          </ListItem></LinkPage> 
          
          <Divider/>
-         <ListItem disablePadding>
+         <ListItem  onClick={LogoutHandle} disablePadding>
            <ListItemButton component="a" >
              <ListItemIcon>
                 <Logout/>
@@ -225,7 +216,7 @@ const [loadProduct, setLoadProduct] = useState(false)
 
   <IconButton  aria-label="cart">
          
-         <Badge badgeContent={BageNo} color="primary">
+         <Badge badgeContent={state.bageNo} color="primary">
       
       <ShoppingCart style={{color:"whitesmoke"}} />
     </Badge>
@@ -233,13 +224,13 @@ const [loadProduct, setLoadProduct] = useState(false)
          <Icons>
            
          <LogoutIcon
-        //   onClick={logout}
+          onClick={LogoutHandle}
           />
-           <Avatar
+           {/* <Avatar
              sx={{ width: 30, height: 30 }}
             
              onClick={(e) => setOpen(true)}
-           />
+           /> */}
          </Icons>
          {/* <UserBox onClick={(e) => setOpen(true)}>
            <Avatar

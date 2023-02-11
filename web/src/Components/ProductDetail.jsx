@@ -1,19 +1,22 @@
 import React from 'react'
+import { GlobalContext } from '../Context/Context';
+import ProductSkeleten from './ProductSkeleten';
+import ErrorIcon from '@mui/icons-material/Error';
 import axios from 'axios';
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  listAll,
-  list,
-} from "firebase/storage";
+// import {
+//   ref,
+//   uploadBytes,
+//   getDownloadURL,
+//   listAll,
+//   list,
+// } from "firebase/storage";
+// import { getStorage,uploadBytesResumable,
+
+// } from "firebase/storage";
 import noProductFound from '../assets/product-not-found.png'
-import { v4 } from "uuid";
-import { getStorage,uploadBytesResumable,
+import './productDetail.css'
 
-} from "firebase/storage";
-
-import { useState, useEffect } from "react"
+import { useState, useEffect,useContext } from "react"
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import {
   Typography, Card, CardContent,CircularProgress,
@@ -44,13 +47,9 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 
 
 
-let baseUrl = "";
-if (window.location.href.split(":")[0] === "http") {
-  baseUrl = "http://localhost:3000";
-} else {
-  baseUrl = "https://wild-pink-bat-tam.cyclic.app/";
-}
+
 const Home = () => {
+  let { state, dispatch } = useContext(GlobalContext);
   const [loadProduct, setLoadProduct] = useState(false)
   const [prodImage, setProdImage] = useState('')
   const [ProductData, setProductData] = useState(null)
@@ -62,7 +61,8 @@ const Home = () => {
   const [progress, setProgress] = useState(0);
   const [open, setOpen] = useState(false);
   const [productDataLength, setProductDataLength] = useState(null);
-
+  const [preview, setPreview] = useState(null)
+ 
   const [editing, setEditing] = useState({
 editingid:null,
 editingName:"",
@@ -100,18 +100,35 @@ editingProdImage:""
   };
 
 
-  const storage = getStorage();
+  // const storage = getStorage();
 
 
   const getAllProducts = async () => {
+    dispatch({
+      type:"LOAD_SKELETON",
+      payload:true
+    })
     try {
-      const response = await axios.get(`${baseUrl}/products`);
-      console.log("response: ", response.data);
+      const response = await axios.get(`${state.baseUrl}/products`,{
+         
+        withCredentials: true,
+        
+     
+    });
+      console.log("responseProduct: ", response.data);
 
       setProductData(response.data.data);
      setProductDataLength(response.data.data.length)
+     dispatch({
+      type:"LOAD_SKELETON",
+      payload:false
+    })
     } catch (error) {
       if(error){
+        dispatch({
+          type:"LOAD_SKELETON",
+          payload:false
+        })
         ClickOpenError()
       }else{
       handleCloseError()
@@ -123,91 +140,202 @@ editingProdImage:""
   useEffect(() => {
 
     getAllProducts()
-    console.log("file",file)
-  }, [loadProduct])
- 
-  const fileUpload= ()=>{
-    if (!file) return;
-      const sotrageRef = ref(storage, `files/${file.name}`);
-      const uploadTask = uploadBytesResumable(sotrageRef, file);
   
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const prog = Math.round(
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-          );
-          setProgress(prog);
-        },
-        (error) => console.log(error),
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-         console.log("File available at", downloadURL);
-            setStorageURL(downloadURL)
-           
-          });
-        }
-      );
-  }
+  }, [loadProduct])
+  
 
-  if(file){
-    fileUpload()
-    setFile(null)
-   }
+  // const fileUpload= ()=>{
+  //   if (!file) return;
+  //     const sotrageRef = ref(storage, `files/${file.name}`);
+  //     const uploadTask = uploadBytesResumable(sotrageRef, file);
+  
+  //     uploadTask.on(
+  //       "state_changed",
+  //       (snapshot) => {
+  //         const prog = Math.round(
+  //           (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+  //         );
+  //         setProgress(prog);
+  //       },
+  //       (error) => console.log(error),
+  //       () => {
+  //         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+  //        console.log("File available at", downloadURL);
+  //           setStorageURL(downloadURL)
+           
+  //         });
+  //       }
+  //     );
+  // }
+
+
+  // let formData = new FormData();
+
+  //           formData.append("myFile", file);
+  
+
+  // console.log("fileInput: ", fileInput.files[0]);
+  // let fileInput = document.getElementById("picture");
+  let formData = new FormData();
+
+
+  
+//   const submitHandler = async (e) => {
+//     e.preventDefault();
+//     if(error || success){
+//       handleClickMsg()
+//     }
+//     setSuccess('')
+// setError('')
+// console.log(file,"file")
+//     try {
+//       const response = await axios.post(`${state.baseUrl}/product` ,{
+        
+//         name:  prodName,
+//         price: prodPrice,
+//         description: prodDec,
+//         productImage:formData,
+
+//       },{withCredentials:true});
+//       console.log(response);
+//       setSuccess(response.data.message
+//         )
+//        e.target.reset()
+//       setProdName("")
+//       setProdPrice("")
+//       setProdDec("")
+//       // setStorageURL("")
+//       setProgress(0)
+    
+//       setLoadProduct(!loadProduct)
+  
+//     } catch (err) {
+//       setError(err.message
+//         )
+//       console.log("err post", err);
+//     }
+//   };
+
+
+
+
+
+
+formData.append("productImage", file);
+formData.append("name", prodName);
+formData.append("price", prodPrice);
+formData.append("description", prodDec);
   const submitHandler = async (e) => {
     e.preventDefault();
+    dispatch({
+      type:"LOAD_SKELETON",
+      payload:true
+    })
     if(error || success){
       handleClickMsg()
     }
-    try {
-      const response = await axios.post(`${baseUrl}/product`, {
-        name:  prodName,
-        price: prodPrice,
-        description: prodDec,
-        productImage:storageURL,
+    setSuccess('')
+setError('')
 
-      });
-      console.log(response);
-      setSuccess(response.data.message
-        )
-       e.target.reset()
-      setProdName("")
-      setProdPrice("")
-      setProdDec("")
-      setStorageURL("")
-      setProgress(0)
-    
+axios({
+  method: 'post',
+  url: `${state.baseUrl}/product`,
+  data: formData,
+  headers: { 'Content-Type': 'multipart/form-data' },
+  withCredentials:true
+})
+  .then(res => {
       setLoadProduct(!loadProduct)
-  
-    } catch (err) {
-      setError(err.message
+      console.log(`upload Success` + res.data);
+      setSuccess(res.message
         )
-      console.log("err post", err);
-    }
+      dispatch({
+        type:"LOAD_SKELETON",
+        payload:false
+      })
+      e.target.reset()
+      setFile(null)
+      setProgress(0)
+      setPreview(null)
+  })
+  .catch(err => {
+    dispatch({
+      type:"LOAD_SKELETON",
+      payload:false
+    })
+    
+      console.log("error: ", err);
+      setError(err.response.data.message)
+
+  })
   };
 
-  // const submitHandler = async (e) => {
-  //   e.preventDefault();
-  //   let data = {
-  //     name: prodName,
-  //     price: prodPrice,
-  //     description: prodDec,
-  //     productImage:storageURL,
-  //   }
-  //   const response = await
-  //     axios.post(`${baseUrl}/product`, data);
-  //   console.log(data)
-  //   // console.log(prodName, prodDec, prodPrice,prodImage)
-  //   console.log(response);
-  //   setLoadProduct(!loadProduct)
-  // }
+
+
+//   const submitHandler = async (e) => {
+//     e.preventDefault();
+//     if(error || success){
+//       handleClickMsg()
+//     }
+//     setSuccess('')
+// setError('')
+//     try {
+//       const response = await axios.post(`${state.baseUrl}/product` ,{
+        
+//         name:  prodName,
+//         price: prodPrice,
+//         description: prodDec,
+//         productImage:file,
+
+//       },{withCredentials:true});
+//       console.log(response);
+//       setSuccess(response.data.message
+//         )
+//        e.target.reset()
+//       setProdName("")
+//       setProdPrice("")
+//       setProdDec("")
+//       // setStorageURL("")
+//       setProgress(0)
+    
+//       setLoadProduct(!loadProduct)
+  
+//     } catch (err) {
+//       setError(err.message
+//         )
+//       console.log("err post", err);
+//     }
+//   };
+
+//   const submitHandler = async (e) => {
+//     e.preventDefault();
+//     let data = {
+//       name: prodName,
+//       price: prodPrice,
+//       description: prodDec,
+//       productImage:storageURL,
+//     }
+//     const response = await
+//       axios.post(`${state.baseUrl}/product`, data);
+//     console.log(data)
+//     // console.log(prodName, prodDec, prodPrice,prodImage)
+//     console.log(response);
+//     setLoadProduct(!loadProduct)
+//   }
   
   const deleteProduct = async (id) => {
     if(error || success){
       handleClickMsg()
     }
+    setSuccess('')
+setError('')
     try {
-      const response = await axios.delete(`${baseUrl}/product/${id}`)
+      const response = await axios.delete(`${state.baseUrl}/product/${id}`,{
+         
+        withCredentials: true,
+        
+     
+    })
       console.log("response: ", response.data);
       setSuccess(response.data.message)
       setLoadProduct(!loadProduct)
@@ -226,14 +354,15 @@ editingProdImage:""
   }
   
   e.preventDefault();
-
+  setSuccess('')
+  setError('')
     try {
-      const response = await axios.put(`${baseUrl}/product/${editing.editingid}`,{
+      const response = await axios.put(`${state.baseUrl}/product/${editing.editingid}`,{
         name:editing.editingName,
         price:editing.editingPrice,
         description:editing.editingDescription,
         productImage:storageURL
-      })
+      },{withCredentials:true})
       setSuccess(response.data.message)
       handleClose()
       setFile(null)
@@ -411,10 +540,10 @@ e.target.reset()
       <Typography sx={{m:2,ml:3}} variant='h4'>
 Add Product
       </Typography>
-      <form style={{margin:'3px'}} onSubmit={submitHandler}>
+      <form style={{margin:'5px'}} onSubmit={submitHandler}>
         <TextField
        
-          sx={{ pl: 3, pr: 5,width:{lg:"800px",sm:"600px",xs:"330px"} }}
+          sx={{ pl: 3, pr: 5,width:{lg:"700px",sm:"500px",xs:"330px"} }}
           size="medium"
           type="text" placeholder="Enter your Product name" required
           onChange={(e) => { setProdName(e.target.value) }}>
@@ -422,7 +551,7 @@ Add Product
 
         <br /><br />
         <TextField
-         sx={{ pl: 3, pr: 5,width:{lg:"350px",sm:"350px",xs:"330px"} }}
+         sx={{ pl: 3, pr: 5,width:{lg:"700px",sm:"500px",xs:"330px"} }}
           size="medium"
           type="number" placeholder="Enter your Product Price" required
           onChange={(e) => { setProdPrice(e.target.value) }}>
@@ -432,7 +561,7 @@ Add Product
         <br />
         <TextField
         
-        sx={{ pl: 3, pr: 5,width:{lg:"800px",sm:"600px",xs:"330px"} }}
+        sx={{ pl: 3, pr: 5,width:{lg:"700px",sm:"500px",xs:"330px"} }}
           size="medium"
           type="text" placeholder="Enter your product Description"
           onChange={(e) => { setProdDec(e.target.value) }}>
@@ -446,18 +575,35 @@ Add Product
                 sx={{pl:5,pr:5}}
                  size="small"
                 type="file"  
-                id='select-image'
+                id="picture"
             
 
-                name='postImage'
+                name='picture'
                 onChange={(e) => {
                   setFile(e.currentTarget.files[0])
-                }}
-                style={{ display: 'none' }}>
-                </TextField> 
-                <Box sx={{ml:2}}>
+                  setProgress(100)
+                  var url = URL.createObjectURL(e.currentTarget.files[0])
 
-<label  htmlFor="select-image">
+                  console.log("url: ", url);
+
+                  setPreview(url)
+                }}
+                 style={{ display: 'none' }}
+                >
+                </TextField> 
+
+              {  (preview)?
+            <div  className='zoom'>
+
+          
+                <img  style={{margin:"5px 0px 5px 22px "}} src={preview} height="80px" width="80px" alt="" srcset="" />
+                </div>:""
+              }
+                <Box sx={{ml:8}}>
+
+
+
+<label  htmlFor="picture">
 < AddPhotoAlternateIcon style={{ paddingLeft: "5px", fontSize: "25px", color: 'green' }} />
 </label>
 {/* <Button sx={{ml:2}} onClick={fileUpload}>set image</Button>  */}
@@ -485,7 +631,11 @@ Add Product
 {/* {
 (progress === '100')?<h5>Done{progress}%</h5>:<h5>loading{progress}%</h5>
 }  */}
+
 </Box> 
+{(!error)?"":<p style={{paddingLeft:"35px" ,color:"red", display:"flex"}}>
+  <ErrorIcon/>
+ <p style={{marginLeft:"10px"}}>{error}</p></p>}
 {/* {(fileUpload && !storageURL === "")?
         <Button sx={{ml:10}} type="submit" variant="outlined">Add Product </Button>
       : 
@@ -538,46 +688,43 @@ Add Product
           
                   
 
-      <Divider />
-
-      {(!ProductData || productDataLength === 0)?
+      <Divider sx={{mt:8}} />
+     {/* loading skeleton */}
+     {(state.productSkeleton)?
+     <ProductSkeleten/>:
+   
+      (!ProductData || productDataLength === 0)?
       <CardMedia
               component="img"
               width="200"
               loading="lazy"
-                sx={{height:{xs:"600",sm:"700",lg:"850"}}}
+                sx={{height:{xs:"600",sm:"700",lg:"850"},mixBlendMode:"color-burn"}}
               image={noProductFound}
               alt="No product Image"
             />:
-      <Grid sx={{m:{xs:1,sm:5,lg:3}}} container item spacing={7}>  
+      <Grid sx={{m:{xs:1,sm:5,lg:3},mb:{xs:6,sm:5,lg:7}}} container item spacing={7}>  
       {(!ProductData) ? null :
         ProductData?.map((eachProduct, index) => (
           <Paper
             key={index}
             elevation={3}
-            sx={{ m:{xs:2,lg:2,sm:1},mb:"5px",  width: '100%', maxWidth:{ lg:300,xs:320,sm:300}, bgcolor: 'background.paper' }}>
+            sx={{ m:{xs:2,lg:2,sm:1},mb:"5px",  width: '100%', maxWidth:{ lg:300,xs:320,sm:300}, bgcolor: '#171723'
+            ,borderRadius:"10px",color:"whitesmoke" }}>
 
-            <Box sx={{ width: '100%', maxWidth:{ lg:300,xs:320,sm:300}, bgcolor: 'background.paper' }}>
-              {(storageURL === null) ? 
+           <Box sx={{ width: '100%', maxWidth:{ lg:300,xs:320,sm:300},
+            bgcolor: '#171723',p:1,borderRadius:"10px",color:"whitesmoke"}}>
+             
+              
+              
               <CardMedia
-              component="img"
-              width="200"
-              
-              loading="lazy"
-                height="200"
-              image='https://products.ideadunes.com/assets/images/default_product.jpg'
-              alt="No product Image"
-            />
-              
-              
-              : <CardMedia
                 component="img"
                 width="200"
                 loading="lazy "
                 height="200"
+              
                 image={eachProduct.productImage}
                 alt="green iguana"
-              />}
+              />
               <Box sx={{ my: 3, mx: 2 }}>
                 <Grid container alignItems="center">
                   <Grid item xs>
@@ -592,7 +739,7 @@ Add Product
                     </Typography>
                   </Grid>
                 </Grid>
-                <Typography color="text.secondary" variant="body2">
+                <Typography sx={{ opacity: 0.5}} color="whitesmoke" variant="body2">
                   {eachProduct.description}
                 </Typography>
               </Box>

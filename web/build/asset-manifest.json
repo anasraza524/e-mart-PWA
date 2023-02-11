@@ -1,20 +1,26 @@
 {
   "files": {
-    "main.css": "/static/css/main.5397877e.css",
-    "main.js": "/static/js/main.033e397b.js",
+    "main.css": "/static/css/main.96d04427.css",
+    "main.js": "/static/js/main.6f545573.js",
     "static/js/787.d1d4a2c2.chunk.js": "/static/js/787.d1d4a2c2.chunk.js",
     "static/media/404.gif": "/static/media/404.ee10a1d3e82873f65b28.gif",
     "static/media/ecom-cart.gif": "/static/media/ecom-cart.cc84f6b3aee42d95dfb5.gif",
+    "static/media/Loading.gif": "/static/media/Loading.fbe746eded1db288ab7a.gif",
     "static/media/runingCart.gif": "/static/media/runingCart.681780afb880c053d394.gif",
+    "static/media/error..gif": "/static/media/error..942922e4ad3c7fb5031f.gif",
     "static/media/cool-loading-animated.gif": "/static/media/cool-loading-animated.3edbd52dfac33e067ec4.gif",
+    "static/media/sending-emai.gif": "/static/media/sending-emai.3fc16991247a53d047f6.gif",
+    "static/media/got-OTP.gif": "/static/media/got-OTP.61e74882d32369e4f2ab.gif",
+    "static/media/cart.gif": "/static/media/cart.f00a8540df3fb2c0f7b1.gif",
+    "static/media/Succes.gif": "/static/media/Succes.a3a7e51cff82c1075841.gif",
     "static/media/product-not-found.png": "/static/media/product-not-found.cbf15b162a87b5c96deb.png",
     "index.html": "/index.html",
-    "main.5397877e.css.map": "/static/css/main.5397877e.css.map",
-    "main.033e397b.js.map": "/static/js/main.033e397b.js.map",
+    "main.96d04427.css.map": "/static/css/main.96d04427.css.map",
+    "main.6f545573.js.map": "/static/js/main.6f545573.js.map",
     "787.d1d4a2c2.chunk.js.map": "/static/js/787.d1d4a2c2.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.5397877e.css",
-    "static/js/main.033e397b.js"
+    "static/css/main.96d04427.css",
+    "static/js/main.6f545573.js"
   ]
 }

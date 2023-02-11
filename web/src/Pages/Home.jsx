@@ -1,14 +1,17 @@
 import React from 'react'
 import SlideShow from '../Components/SlideShow';
+import { GlobalContext } from '../Context/Context';
 import { Link } from "react-router-dom";
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
+import ProductSkeleten from '../Components/ProductSkeleten';
 import Stack from '@mui/material/Stack';
+import InfiniteScroll from 'react-infinite-scroller';
 import {
-  Divider,Paper,Box,Button,Grid,CardMedia,Typography
+  Divider,Paper,Box,Button,Grid,CardMedia,Typography,Pagination
 } from '@mui/material'
 import axios from 'axios';
-import { useState, useEffect } from "react"
+import { useState, useEffect,useContext } from "react"
 
 import { styled } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
@@ -25,6 +28,7 @@ import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { set } from 'mongoose';
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
     padding: theme.spacing(2),
@@ -34,20 +38,28 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   },
 }));
 
-let baseUrl = "";
-if (window.location.href.split(":")[0] === "http") {
-  baseUrl = "http://localhost:3000";
-} 
-const Home = ({BageNo,setBageNo}) => {
+
+const Home = ({loadCart, setLoadCart}) => {
+  let { state, dispatch } = useContext(GlobalContext);
   const [CurrentProduct, setCurrentProduct] = useState(null)
-  const [homeProductData, setHomeProductData] = useState(null)
+  const [homeProductData, setHomeProductData] = useState([])
   const [loadProduct, setLoadProduct] = useState(false)
   const [open, setOpen] = useState(false);
- const [bodyError, setBodyError] = useState({
-  message:"",
-      statusText: "",
-      status:  ""
- })
+  const [page, setPage] = useState(0)
+  const [CurrentPage, setCurrentPage] = useState(1)
+const [ProductSkeleton, setProductSkeleton] = useState(false)
+  const handleChangePagination = (event, value) => {
+    setCurrentPage(value);
+    setLoadProduct(!loadProduct)
+  };
+ 
+  const [bodyError, setBodyError] = useState({
+    message:"",
+        statusText: "",
+        status:  ""
+   })
+const [eof, setEof] = useState(false)
+
 const [homeProductDataLength, sethomeProductDataLength] = useState(null)
   const handleClickOpen = () => {
     setOpen(true);
@@ -79,50 +91,93 @@ const [homeProductDataLength, sethomeProductDataLength] = useState(null)
 
     setOpenSnak(false);
   };
-  useEffect(() => {
+  // const  getAddtoCarts =async () => {
+  //   const response =
+  //     await axios.get(`${state.baseUrl}/addtocarts`,{
+       
+  //       withCredentials: true,
+        
     
-    (async () => {
-      const response =
-        await axios.get(`${baseUrl}/addtocarts`);
-      
-      console.log("addtocart", response.data.data)
-    setBageNo(response.data.data.length)
-   
-    })();
-  }, [loadProduct]); 
+  //   });
+  //      dispatch({
+  //       type: 'BAGE_NO',
+  //       payload: response.data.data.length
+
+  //     })
+     
+  //   // console.log("addtocart", response.data.data)
+  // //  setBageNo(response.data.data.length)
+ 
+  // }
+
 
 
 const getAllProducts = async () => {
+  if (eof) return;
+  dispatch({
+    type:"LOAD_SKELETON",
+    payload:true
+  })
   try {
-    const response = await axios.get(`${baseUrl}/products`);
-    console.log("response: ", response.data.data);
+  
+    const response = await axios.get(`${state.baseUrl}/productFeed?page=${CurrentPage}`,{
+         
+      withCredentials: true,
+      
+   
+  });
 
-    setHomeProductData(response.data.data);
-    sethomeProductDataLength(response.data.data.length)
+ 
+  console.log("hjhj",response)
+  setPage(response.data)
+  setHomeProductData(response.data.data)
+ 
+//   if (response.data.data.length === 0) setEof(true);
+//     // console.log("response: ", response);
+// // way before pagination 
+//     // setHomeProductData(response.data.data);
+
+//     // after pagination
+//     setHomeProductData((prev) => {
+
+//       // if (prev.length >= 10) {
+//       //     prev = prev.slice(5)
+//       // }
+//       return [...prev, ...response.data.data]
+//   })
+    // sethomeProductDataLength(response.data.data.length)
     
-    if(response.data.data.length === 0){
-         handleClickOpen()
-       }else{
-         handleClose()
-      }
+    // if(response.data.data.length === 0){
+    //      handleClickOpen()
+    //    }else{
+    //      handleClose()
+    //   }
+    dispatch({
+      type:"LOAD_SKELETON",
+      payload:false
+    })
   } catch (error) {
+    dispatch({
+      type:"LOAD_SKELETON",
+      payload:false
+    })
     if(error){
       ClickOpenError()
     }else{
     handleCloseError()
    }
-     setBodyError({
-      message:error.message,
-      statusText: error.response.statusText,
-      status:  error.response.status
-    }
-        )
-    console.log("error in getting all products", error);
+   console.log(error,"error")
+    //  setBodyError({
+    //   message:error.message,
+    //   statusText: error.response.statusText,
+    //   status:  error.response.status
+    // }
+    //     )
+    // console.log("error in getting all products", error);
   }
 }
 
 useEffect(() => {
-
   getAllProducts()
 
 }, [loadProduct])
@@ -131,12 +186,19 @@ useEffect(() => {
     if(error || success){
       handleClickMsg()
     }
+    setSuccess('')
+setError('')
     try {
-      const response = await axios.get(`${baseUrl}/product/${id}`)
-      console.log("response: ", response.data);
-console.log("response2: ", response.data.data)
+      const response = await axios.get(`${state.baseUrl}/product/${id}`,{
+         
+        withCredentials: true,
+        
+     
+    })
+//       console.log("responseCart: ", response);
+// console.log("response2: ", response.data.data)
       setCurrentProduct(response.data.data)
-      console.log("CurrentProduct",CurrentProduct)
+      // console.log("CurrentProduct",CurrentProduct)
       let cart = {
         id:response.data.data._id,
         name:response.data.data.name,
@@ -161,18 +223,25 @@ console.log("response2: ", response.data.data)
     if(error || success){
       handleClickMsg()
     }
+    setSuccess('')
+setError('')
     try {
       const response = await
-      axios.post(`${baseUrl}/addtocart`, objectCart);
+      axios.post(`${state.baseUrl}/addtocart`, objectCart,{
+         
+        withCredentials: true,
+
+    });
   
-   console.log("asds",response)
+  //  console.log("asds",response)
    setSuccess(response.data.message
     )
-    setLoadProduct(!loadProduct)
+   setLoadCart(!loadCart)
+   
 
     } catch (error) {
-      setError(error.message)
-      console.log("error cart in getting all products", error);
+      setError(error.response.data.message)
+       console.log("error cart in getting all products", error);
     
     }
   }
@@ -283,7 +352,11 @@ console.log("response2: ", response.data.data)
       </BootstrapDialog>
     </div>
      
-     
+
+     {/* loading skeleton */}
+     {(state.productSkeleton)?
+     <ProductSkeleten/>:""
+    }
      
       
    
@@ -292,52 +365,69 @@ console.log("response2: ", response.data.data)
               component="img"
               width="200"
               loading="lazy"
-                sx={{height:{xs:"600",sm:"800",lg:"850"}}}
+                sx={{height:{xs:"600",sm:"800",lg:"850"},mixBlendMode:"color-burn"}}
               image={Cart}
               alt="No product Image"
+              
             />:
-       
-         <Grid sx={{height:"100%" ,m:{xs:1,sm:2,lg:3}}} container item spacing={6}>
-         {(!homeProductData) ? null :
-        homeProductData?.map((eachProduct, index) => ( 
+            // <InfiniteScroll
+            // pageStart={0}
+            // loadMore={getAllProducts}
+            // hasMore={!eof}
+            // loader={<ProductSkeleten />}
          
+            // >
+         <Grid sx={{height:"100%" ,m:{xs:1,sm:2,lg:3}}} container item spacing={6}>
+    
+
+
+
+         {(!homeProductData) ? null :
+
+
+        homeProductData?.map((eachProduct, index) => ( 
+
           <Paper
           
           key={index}
             elevation={4}
-            sx={{ m:{xs:2,lg:2,sm:1},mb:"5px",  width: '100%', maxWidth:{ lg:300,xs:320,sm:300}, bgcolor: 'background.paper' }}>
+            sx={{ m:{xs:2,lg:2,sm:1},mb:"5px",  width: '100%',
+             maxWidth:{ lg:300,xs:320,sm:300}, bgcolor: '#171723'
+             ,borderRadius:"10px",color:"whitesmoke" }}>
 
-            <Box sx={{ width: '100%', maxWidth:{ lg:300,xs:320,sm:300}, bgcolor: 'background.paper' }}>
+            <Box sx={{ width: '100%', maxWidth:{ lg:300,xs:320,sm:300},
+             bgcolor: '#171723',p:1,borderRadius:"10px",color:"whitesmoke"}}>
              
               
               
                <CardMedia
                 component="img"
-                width="250"
+                width="225"
                 loading="lazy"
-                height="250"
+                height="225"
+                sx={{borderRadius:"2px"}}
                 // image='https://www.shutterstock.com/image-vector/sunscreen-product-banner-ads-on-260nw-1509241181.jpg'
-                 image={eachProduct.productImage}
+                 image={eachProduct?.productImage}
                 alt="green iguana"
               />
               <Box sx={{ my: 3, mx: 2 }}>
                 <Grid container alignItems="center">
                   <Grid item xs>
                     <Typography gutterBottom variant="h4" component="div">
-                      {eachProduct.name}
+                      {eachProduct?.name}
                       {/* sdsd */}
                     </Typography>
                   </Grid>
                   <Grid item>
                     <Typography gutterBottom variant="h6" component="div">
-                      ${eachProduct.price}
+                      ${eachProduct?.price}
                       {/* sdfsdf */}
                     </Typography>
                   </Grid>
                 </Grid>
-                <Typography color="text.secondary" variant="body2">
+                <Typography sx={{ opacity: 0.5}} color="whitesmoke" variant="body2">
                   {/* dsdsdsd */}
-                  {eachProduct.description}
+                  {eachProduct?.description}
                 </Typography>
                 
               </Box>
@@ -350,7 +440,7 @@ console.log("response2: ", response.data.data)
                 <Button
                 //  onClick={AddTheProduct}
                 onClick={() => {
-                  getAProduct(eachProduct._id)
+                  getAProduct(eachProduct?._id)
                  
                 }}
                  color='success' variant='contained'>Add to cart</Button>
@@ -363,17 +453,23 @@ console.log("response2: ", response.data.data)
           </Paper>
           
               
-                ))
-              } 
+                )
+                )}
+              
 
          
-         
-          </Grid>
+            
+  </Grid>
           
-
+  // </InfiniteScroll>
             }
 
-
+<Pagination
+size="large"
+sx={{m:3,mb:10}}
+ page={CurrentPage} 
+              onChange={handleChangePagination}
+                count={page.totalPages} variant="outlined" shape="rounded" />
      
     </div>
   )

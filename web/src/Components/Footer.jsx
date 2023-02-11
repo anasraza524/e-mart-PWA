@@ -9,9 +9,9 @@ function Copyright() {
   return (
     <Typography variant="body2" color="text.secondary">
       {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
+      <a href='https://github.com/anasraza524' target="_blank" >
         Muhammad Anas Raza
-      </Link>{' '}
+      </a>{' '}
       {new Date().getFullYear()}
       {'.'}
     </Typography>
@@ -24,10 +24,17 @@ export default function StickyFooter() {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        minHeight: '20vh',
+      minHeight:"15hv"
+        ,position:"fixed",
+        textAlign:"center",
+        width:"100%",
+        bottom:0,
+      
+        left:0,
+        mt:5
       }}
     >
-      <CssBaseline />
+      {/* <CssBaseline /> */}
       {/* <Container component="main" sx={{ mt: 8, mb: 2 }} maxWidth="sm">
         <Typography variant="h2" component="h1" gutterBottom>
           Sticky footer
@@ -40,22 +47,22 @@ export default function StickyFooter() {
       </Container> */}
       <Box
         component="footer"
+       
         sx={{
-          py: 2,
-          px: 2,
+          mt:5,
+          py: 1,
+          px: 5,
           mt: 'auto',
-          backgroundColor: (theme) =>
-            theme.palette.mode === 'light'
-              ? theme.palette.grey[200]
-              : theme.palette.grey[800],
+          backgroundColor:"#7ceaa4", color:"whitesmoke"
         }}
       >
         <Container maxWidth="sm">
-          <Typography variant="body1">
-            For Contact.
-          </Typography>
-          <Copyright />
-          <Box>
+      
+        <Copyright />
+          <Box 
+          // style={{display:'flex'}}
+           >
+          
           <a href="https://www.facebook.com/profile.php?id=100016828268876" target="_blank"  class="fa fa-facebook"></a>
           <a href="https://www.linkedin.com/in/muhammad-anas-raza-siddiqui-963362214/" target="_blank"  class="fa fa-linkedin"></a>
           <a href="https://www.instagram.com/arsiddiqui26/" target="_blank"  class="fa fa-instagram"></a>

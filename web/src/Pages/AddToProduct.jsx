@@ -1,6 +1,6 @@
 import React from 'react'
 import axios from 'axios';
-import { useState, useEffect } from "react"
+import { useState, useEffect,useContext } from "react"
 import {Snackbar,Alert} from '@mui/material';
 import {
   Stack,Divider,Paper,Box,Button,Grid,CardMedia,Typography
@@ -15,8 +15,10 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Link } from "react-router-dom";
 import CancelIcon from '@mui/icons-material/Cancel';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import Cart2 from '../assets/cart.gif'
 import shop from '../assets/ecom-cart.gif'
 import Cart from '../assets/cool-loading-animated.gif'
+import { GlobalContext } from '../Context/Context';
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
     padding: theme.spacing(2),
@@ -27,14 +29,11 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 }));
 
 
-let baseUrl = ``;
-if (window.location.href.split(":")[0] === "http") {
-  baseUrl = `http://localhost:3000`;
-}
 
 
-const AddToProduct = ({BageNo,setBageNo}) => {
-  
+
+const AddToProduct = ({setLoadCart,loadCart}) => {
+  let { state, dispatch } = useContext(GlobalContext);
   const [addtoCartData, setaddtoCartData] = useState(null)
   const [loadProduct, setLoadProduct] = useState(false)
   const [open, setOpen] = useState(false);
@@ -59,34 +58,56 @@ const AddToProduct = ({BageNo,setBageNo}) => {
     setOpenSnak(false);
   };
 
-
-  useEffect(() => {
-    
-    (async () => {
-      const response =
-        await axios.get(`${baseUrl}/addtocarts`);
-      setaddtoCartData(response.data.data);
-      console.log("addtocart", response.data.data)
-    setBageNo(response.data.data.length)
-    if(response.data.data.length === 0){
-      handleClickOpen()
-    }else{
-      handleClose()
-   }
-    })();
-  }, [loadProduct]);
+console.log(state.cartData,"state.cartData")
+// const getAllCart = () => { 
+//   try {
+//     setaddtoCartData(state.cartData)
+//   console.log(state.cartData,"state.cartData")
+//   } catch (error) {
+//     console.log(error,"cartError")
+//   }
+  
 
 
+//  }
+//  useEffect(() => {
+
+   
+
+//      getAllCart()
+   
+//  }, [loadCart]);
+
+// if(state.cartData){
+//   handleClose() 
+// }else{
+//   handleClickOpen()
+// }
+
+useEffect(() => {
+  if(state.bageNo === 0){
+    handleClickOpen()
+  }else{
+    handleClose()
+ }
+}, [loadCart])
 
   const deleteCartProduct = async (id) => {
     if(error || success){
       handleClickMsg()
     } 
+    setSuccess('')
+setError('')
     try {
-      const response = await axios.delete(`${baseUrl}/addtocart/${id}`)
+      const response = await axios.delete(`${state.baseUrl}/addtocart/${id}`,{
+         
+        withCredentials: true,
+        
+     
+    })
       console.log("response: ", response.data);
       setSuccess(response.data.message)
-      setLoadProduct(!loadProduct)
+      setLoadCart(!loadCart)
 
     } catch (error) {
       setError(error.message)
@@ -157,31 +178,33 @@ const AddToProduct = ({BageNo,setBageNo}) => {
         </DialogActions>
       </BootstrapDialog>   
       
-      {(BageNo === 0 )?
+      {(state.bageNo === 0 )?
       <CardMedia
               component="img"
-              width="200"
+              width="100px"
               loading="lazy"
-                sx={{height:{xs:"550px",sm:"600px",lg:"750px"},mt:{xs:"80px"}}}
-              image={Cart}
+                sx={{height:{xs:"450px",sm:"500px",lg:"550px"},mt:{xs:"80px"},backgroundSize:'cover'}}
+              image={Cart2}
               alt="No product Image"
             />:  
-      <Grid sx={{m:{xs:1,sm:2,lg:3}}} container item spacing={6}>
-    {(!addtoCartData) ? null :
-   addtoCartData?.map((eachProduct, index) => ( 
+      <Grid sx={{m:{xs:1,sm:2,lg:3},mb:{xs:6,sm:5,lg:7}}} container item spacing={6}>
+    {(!state.cartData) ? null :
+  state.cartData?.map((eachProduct, index) => ( 
      <Paper
      
      key={index}
        elevation={4}
-       sx={{ m:{xs:2,lg:2,sm:1},mb:"5px",  width: '100%', maxWidth:{ lg:300,xs:320,sm:300}, bgcolor: 'background.paper' }}>
+       sx={{ m:{xs:2,lg:2,sm:1},mb:"5px",  width: '100%', maxWidth:{ lg:300,xs:320,sm:300}, bgcolor: '#171723'
+       ,borderRadius:"10px",color:"whitesmoke" }}>
 
-            <Box sx={{ width: '100%', maxWidth:{ lg:300,xs:320,sm:300}, bgcolor: 'background.paper' }}>
+      <Box sx={{ width: '100%', maxWidth:{ lg:300,xs:320,sm:300},
+       bgcolor: '#171723',p:1,borderRadius:"10px",color:"whitesmoke"}}>
         
          
        <CancelIcon
 
 onClick={() => {
-  deleteCartProduct(eachProduct._id)
+  deleteCartProduct(eachProduct?._id)
 }}
      
        sx={{m:1,float:"right"}}/>
@@ -191,7 +214,7 @@ onClick={() => {
            width="200"
            height="200"
            // image='https://www.shutterstock.com/image-vector/sunscreen-product-banner-ads-on-260nw-1509241181.jpg'
-            image={eachProduct.productImage}
+            image={eachProduct?.productImage}
            alt="green iguana"
          />
          <Box sx={{ my: 3, mx: 2 }}>
@@ -204,14 +227,14 @@ onClick={() => {
              </Grid>
              <Grid item>
                <Typography gutterBottom variant="h6" component="div">
-                 ${eachProduct.price}
+                 ${eachProduct?.price}
                  {/* sdfsdf */}
                </Typography>
              </Grid>
            </Grid>
-           <Typography color="text.secondary" variant="body2">
+           <Typography sx={{ opacity: 0.5}} color="whitesmoke" variant="body2">
              {/* dsdsdsd */}
-             {eachProduct.description}
+             {eachProduct?.description}
            </Typography>
            
          </Box>
